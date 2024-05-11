@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .message-container {
+            max-width: 70%;
+        }
+        .message {
+            word-wrap: break-word;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message.sent {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .message.received {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <ul id="messages" class="list-unstyled"></ul>
+                <form id="form" class="mt-3">
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="input" accept="image/*">
+                            <label class="custom-file-label" for="input">Choose file</label>
+                        </div>
+                        <div class="input-group-append">
+                            <button type="button" id="sendButton" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const sendButton = document.getElementById('sendButton');
+
+    sendButton.addEventListener('click', function() {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageData = event.target.result;
+                console.log("Sending image data:", imageData);
+                socket.emit('image', imageData);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    socket.on('image', function(imageData) {
+        console.log("Received image data:", imageData);
+        const item = document.createElement('li');
+        const image = document.createElement('img');
+        image.src = imageData;
+        image.classList.add('img-fluid');
+        item.appendChild(image);
+        item.classList.add('message', 'received');
+        document.getElementById('messages').appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+</script>
+
+</body>
+</html>
